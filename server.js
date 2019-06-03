@@ -75,9 +75,19 @@ async function onPatch(req, res) {
       break;
     }
   }
-  if(target===-1)
+  if(target===-1){
     console.log("can't find target.");
-  
+  }
+  else{
+    let tempData=rows[target];
+    //console.log(tempData);
+    //Due to array doesn't have key. Use indexOf
+    for(var key in messageBody){
+      tempData[rows[0].indexOf(key)]=messageBody[key];
+    }
+    //console.log(tempData);
+    const dump=await sheet.setRow(target,tempData);
+  }
 
   res.json({response: 'success'});
   //res.json( { status: 'unimplemented'} );
