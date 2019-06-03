@@ -17,21 +17,43 @@ app.use(express.static('public'));
 async function onGet(req, res) {
   const result = await sheet.getRows();
   const rows = result.rows;
-  console.log(rows);
+  //console.log(rows);
 
   // TODO(you): Finish onGet.
-
+  let dataArr=[];
+  for(var row=1;row<rows.length;row++){
+    //each rows
+    tempData={};
+    for(var key of rows[0]){
+      tempData[key]=rows[row][rows[0].indexOf(key)];
+      //ex:nth data[name]=rows[nth][indexOf(name)]
+    }
+    //dataArr[row-1]=tempData;
+    dataArr.push(tempData);
+  }
+  console.log(dataArr);
+  res.json(dataArr);
   //res.json( { status: 'unimplemented!!!'} );
-  res.json(rows)
 }
 app.get('/api', onGet);
 
 async function onPost(req, res) {
   const messageBody = req.body;
-
+  
   // TODO(you): Implement onPost.
+  const result = await sheet.getRows();
+  const rows = result.rows;
 
-  res.json( { status: 'unimplemented'} );
+  let tempData=[];//API must use array
+  for(var key in messageBody){
+    tempData[rows[0].indexOf(key)]=messageBody[key];
+    //ex: tempData[indexOf(name)]=messageBody[name]
+    //avoid change key's order
+  }
+  //console.log(tempData);
+  const dump=await sheet.appendRow(tempData);
+  res.json({response: 'success'});
+  //res.json( { status: 'unimplemented'} );
 }
 app.post('/api', jsonParser, onPost);
 
@@ -41,8 +63,24 @@ async function onPatch(req, res) {
   const messageBody = req.body;
 
   // TODO(you): Implement onPatch.
+  const result = await sheet.getRows();
+  const rows = result.rows;
+  let target=-1;
 
-  res.json( { status: 'unimplemented'} );
+  for(var row=1;row<rows.length;row++){
+    //search each row
+    if(rows[row][rows[0].indexOf(column)]===value){
+      target=row;
+      console.log("target: "+target+"->"+column+":"+value);
+      break;
+    }
+  }
+  if(target===-1)
+    console.log("can't find target.");
+  
+
+  res.json({response: 'success'});
+  //res.json( { status: 'unimplemented'} );
 }
 app.patch('/api/:column/:value', jsonParser, onPatch);
 
@@ -51,8 +89,20 @@ async function onDelete(req, res) {
   const value  = req.params.value;
 
   // TODO(you): Implement onDelete.
+  const result = await sheet.getRows();
+  const rows = result.rows;
 
-  res.json( { status: 'unimplemented'} );
+  for(var row=1;row<rows.length;row++){
+    //search each row
+    if(rows[row][rows[0].indexOf(column)]===value){
+      const dump=await sheet.deleteRow(row);
+      console.log("delete: "+column+":"+value);
+      break;
+    }
+  }
+
+  res.json({response: 'success'});
+  //res.json( { status: 'unimplemented'} );
 }
 app.delete('/api/:column/:value',  onDelete);
 
