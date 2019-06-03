@@ -28,8 +28,7 @@ async function onGet(req, res) {
       tempData[key]=rows[row][rows[0].indexOf(key)];
       //ex:nth data[name]=rows[nth][indexOf(name)]
     }
-    //dataArr[row-1]=tempData;
-    dataArr.push(tempData);
+    dataArr[row-1]=tempData;
   }
   console.log(dataArr);
   res.json(dataArr);
@@ -46,11 +45,11 @@ async function onPost(req, res) {
 
   let tempData=[];//API must use array
   for(var key in messageBody){
-    tempData[rows[0].indexOf(key)]=messageBody[key];
+    tempData[rows[0].indexOf(key.toLowerCase())]=messageBody[key];
     //ex: tempData[indexOf(name)]=messageBody[name]
     //avoid change key's order
   }
-  //console.log(tempData);
+  console.log("post: "+tempData);
   const dump=await sheet.appendRow(tempData);
   res.json({response: 'success'});
   //res.json( { status: 'unimplemented'} );
@@ -58,7 +57,7 @@ async function onPost(req, res) {
 app.post('/api', jsonParser, onPost);
 
 async function onPatch(req, res) {
-  const column  = req.params.column;
+  const column  = req.params.column.toLowerCase();
   const value  = req.params.value;
   const messageBody = req.body;
 
@@ -71,7 +70,7 @@ async function onPatch(req, res) {
     //search each row
     if(rows[row][rows[0].indexOf(column)]===value){
       target=row;
-      console.log("target: "+target+"->"+column+":"+value);
+      console.log("patch target: "+target+"->"+column+":"+value);
       break;
     }
   }
@@ -83,7 +82,7 @@ async function onPatch(req, res) {
     //console.log(tempData);
     //Due to array doesn't have key. Use indexOf
     for(var key in messageBody){
-      tempData[rows[0].indexOf(key)]=messageBody[key];
+      tempData[rows[0].indexOf(key.toLowerCase())]=messageBody[key];
     }
     //console.log(tempData);
     const dump=await sheet.setRow(target,tempData);
@@ -95,7 +94,7 @@ async function onPatch(req, res) {
 app.patch('/api/:column/:value', jsonParser, onPatch);
 
 async function onDelete(req, res) {
-  const column  = req.params.column;
+  const column  = req.params.column.toLowerCase();
   const value  = req.params.value;
 
   // TODO(you): Implement onDelete.
